@@ -10,6 +10,12 @@
 
 #include "type.h"
 
+
+// extern SUPER *sp;
+// extern GD    *gp;
+// extern INODE *ip;
+// extern DIR   *dp;   
+
 /**** globals defined in main.c file ****/
 extern MINODE minode[NMINODE];
 extern MINODE *root;
@@ -206,11 +212,66 @@ int findmyname(MINODE *parent, u32 myino, char myname[ ])
   // WRITE YOUR code here
   // search parent's data block for myino; SAME as search() but by myino
   // copy its name STRING to myname[ ]
+   int i; 
+   char *cp, c, sbuf[BLKSIZE], temp[256];
+   DIR *dp;
+   INODE *ip;
+
+   ip = &(parent->INODE);
+
+   /*** search for name in mip's data blocks: ASSUME i_block[0] ONLY ***/
+
+   get_block(dev, ip->i_block[0], sbuf);
+   dp = (DIR *)sbuf;
+   cp = sbuf;
+   while (cp < sbuf + BLKSIZE){
+     strncpy(temp, dp->name, dp->name_len); // dp->name is NOT a string
+     temp[dp->name_len] = 0;                // temp is a STRING
+     if (myino == dp->inode){            // compare name with temp !!!
+      strcpy(myname,temp);
+        return 1;
+     }
+
+     cp += dp->rec_len;
+     dp = (DIR *)cp;
+   }
+   return 0;
+
 }
 
 int findino(MINODE *mip, u32 *myino) // myino = i# of . return i# of ..
 {
+
   // mip points at a DIR minode
   // WRITE your code here: myino = ino of .  return ino of ..
   // all in i_block[0] of this DIR INODE.
+  int i; 
+   char *cp, c, sbuf[BLKSIZE], temp[256];
+   DIR *dp;
+   INODE *ip;
+
+   ip = &(mip->INODE);
+
+
+   get_block(dev, ip->i_block[0], sbuf);
+   dp = (DIR *)sbuf;
+   cp = sbuf;
+
+   while (cp < sbuf + BLKSIZE){
+     strncpy(temp, dp->name, dp->name_len); // dp->name is NOT a string
+     temp[dp->name_len] = 0;                // temp is a STRING
+     if(!strcmp(temp, "."))
+     {
+      *myino = dp->inode;
+     }
+     if(!strcmp(temp, ".."))
+     {
+      return dp->inode;
+     }
+
+     cp += dp->rec_len;
+     dp = (DIR *)cp;
+   }
+   return 0;
+
 }

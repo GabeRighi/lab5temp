@@ -14,6 +14,10 @@
 
 #include "type.h"
 
+SUPER *sp;
+GD    *gp;
+INODE *ip;
+DIR   *dp;   
 extern MINODE *iget();
 
 MINODE minode[NMINODE];
@@ -122,7 +126,7 @@ int main(int argc, char *argv[ ])
     if (strcmp(cmd, "ls")==0)
        ls();
     else if (strcmp(cmd, "cd")==0)
-       cd();
+       cd(pathname);
     else if (strcmp(cmd, "pwd")==0)
        pwd(running->cwd);
     else if (strcmp(cmd, "quit")==0)
