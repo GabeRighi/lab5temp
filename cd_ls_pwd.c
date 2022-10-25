@@ -107,9 +107,49 @@ int ls_dir(MINODE *mip)
   printf("\n");
 }
 
-int ls()
+void ls(char* pathname)
 {
-  ls_dir(running->cwd);
+  if(strcmp(pathname, "") == 0)
+  {
+    ls_dir(running->cwd);
+    return;
+  }
+int i, ino, blk, offset;
+  char buf[BLKSIZE];
+  INODE *ip;
+  MINODE *mip;
+  
+  // starting mip = root OR CWD
+  if (pathname[0]=='/')
+     mip = root;
+  else
+     mip = running->cwd;
+
+  mip->refCount++;         // because we iput(mip) later
+  
+  tokenize(pathname);
+
+  for (i=0; i<n; i++){
+      printf("===========================================\n");
+      printf("getino: i=%d name[%d]=%s\n", i, i, name[i]);
+ 
+      ino = search(mip, name[i]);
+
+      if (ino==0){
+         iput(mip);
+         printf("name %s does not exist\n", name[i]);
+         return;
+      }
+
+      iput(mip);
+      mip = iget(dev, ino);
+   }
+
+  ls_dir(mip);
+   iput(mip);
+  // iput(running->cwd);
+  // running->cwd = mip;
+  
 }
 
 char* rpwd(MINODE *wd)
